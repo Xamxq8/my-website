@@ -1,10 +1,9 @@
 // بيانات تسجيل الدخول
 const users = {
-    user1: "1111",
-    user2: "2222",
-    user3: "3333",
-    user4: "4444",
-    user5: "5555"
+    1111: "1111",
+    2222: "2222",
+    3333: "3333",
+    4444: "5555"
 };
 
 // بيانات الأزواج والفراخ
@@ -121,17 +120,7 @@ function renderRows(data) {
         treatmentEnd.setDate(treatmentEnd.getDate() + c.treatmentDays);
         let className = (c.treatment && today < treatmentEnd) ? "red" : "";
 
-        rows += `<tr class="${className}">
-            <td>${c.number}</td>
-            <td>${c.cage}</td>
-            <td>${c.eggs}</td>
-            <td>${c.hatchDays}</td>
-            <td>${c.treatment || '-'}</td>
-            <td>${c.treatmentDays || '-'}</td>
-            <td>${c.successfulHatches}</td>
-            <td><button onclick="editRecord(${index})">${t.edit}</button></td>
-            <td><button onclick="deleteRecord(${index})">${t.delete}</button></td>
-        </tr>`;
+        rows += `<tr class="${className}"><td>${c.number}</td><td>${c.cage}</td><td>${c.eggs}</td><td>${c.hatchDays}</td><td>${c.treatment || '-'}</td><td>${c.treatmentDays || '-'}</td><td>${c.successfulHatches}</td><td><button onclick="editRecord(${index})">${t.edit}</button></td><td><button onclick="deleteRecord(${index})">${t.delete}</button></td></tr>`;
     });
     return rows;
 }
@@ -142,10 +131,7 @@ function renderChicks() {
     chicks.forEach(ch => {
         let daysOld = calculateDays(new Date(ch.hatchDate));
         let className = daysOld >= 18 ? "green" : "";
-        rows += `<tr class="${className}">
-            <td>${ch.hatchDate}</td>
-            <td>${daysOld}</td>
-        </tr>`;
+        rows += `<tr class="${className}"><td>${ch.hatchDate}</td><td>${daysOld}</td></tr>`;
     });
     return rows;
 }
