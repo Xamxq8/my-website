@@ -1,88 +1,132 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>إدارة الأزواج - Farm Zajel</title>
+  <meta charset="UTF-8" />
+  <title>إدارة أزواج الطيور</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      direction: rtl;
-      padding: 20px;
-      background: #f7f7f7;
-    }
-    h1 {
-      color: #333;
-    }
-    form {
-      margin-bottom: 20px;
-    }
-    input, button {
-      padding: 8px;
-      margin: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-    th {
-      background: #eee;
-    }
+    body { font-family: sans-serif; background: #f8f8f8; padding: 20px; }
+    input, select { padding: 5px; margin: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    .treatment { background-color: #fdd; }
+    .ready { background-color: #dfd; }
+    button { padding: 5px 10px; margin: 2px; }
   </style>
 </head>
 <body>
-  <h1>إضافة زوج جديد</h1>
+
+  <button onclick="toggleLang()">🌐</button>
+
+  <h2 id="title">إضافة زوج جديد</h2>
   <form id="coupleForm">
-    <input type="text" id="coupleId" placeholder="رقم الزوج" required>
-    <input type="number" id="eggCount" placeholder="عدد البيض" required>
+    <input type="text" id="coupleId" placeholder="رقم الزوج" required />
+    <input type="number" id="eggCount" placeholder="عدد البيض" required />
+    <input type="text" id="treatment" placeholder="العلاج" />
+    <input type="date" id="treatmentStart" />
+    <input type="number" id="treatmentDays" placeholder="مدة العلاج (أيام)" />
+    <input type="date" id="hatchDate" placeholder="تاريخ الفقس" />
     <button type="submit">إضافة</button>
   </form>
 
-  <h2>قائمة الأزواج</h2>
+  <h3 id="listTitle">قائمة الأزواج</h3>
   <table id="couplesTable">
     <thead>
       <tr>
-        <th>الزوج</th>
-        <th>عدد البيض</th>
+        <th>رقم الزوج</th>
+        <th>البيض</th>
+        <th>العلاج</th>
+        <th>تاريخ الفقس</th>
+        <th>التحكم</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
-    const form = document.getElementById('coupleForm');
-    const tableBody = document.querySelector('#couplesTable tbody');
+    const lang = {
+      ar: {
+        title: "إضافة زوج جديد",
+        listTitle: "قائمة الأزواج",
+        addBtn: "إضافة",
+        edit: "تعديل",
+        del: "حذف"
+      },
+      hi: {
+        title: "नया जोड़ा जोड़ें",
+        listTitle: "जोड़े की सूची",
+        addBtn: "जोड़ें",
+        edit: "संपादित करें",
+        del: "हटाएं"
+      }
+    };
+    let currentLang = "ar";
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const coupleId = document.getElementById('coupleId').value;
-      const eggCount = document.getElementById('eggCount').value;
-
-      await fetch('/add-couple', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ coupleId, eggCount })
-      });
-
-      form.reset();
+    function toggleLang() {
+      currentLang = currentLang === "ar" ? "hi" : "ar";
+      document.getElementById("title").innerText = lang[currentLang].title;
+      document.getElementById("listTitle").innerText = lang[currentLang].listTitle;
+      document.querySelector("#coupleForm button").innerText = lang[currentLang].addBtn;
       loadCouples();
-    });
+    }
 
     async function loadCouples() {
-      const res = await fetch('/get-couples');
-      const couples = await res.json();
+      const res = await fetch("/get-couples");
+      const data = await res.json();
+      const tbody = document.querySelector("#couplesTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(c => {
+        const tr = document.createElement("tr");
 
-      tableBody.innerHTML = '';
-      couples.forEach(c => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${c.couple_id}</td><td>${c.egg_count}</td>`;
-        tableBody.appendChild(row);
+        const now = new Date();
+        let className = "";
+        if (c.treatment_start && c.treatment_days) {
+          const end = new Date(c.treatment_start);
+          end.setDate(end.getDate() + c.treatment_days);
+          if (now < end) className = "treatment";
+        }
+        if (c.hatch_date) {
+          const hatch = new Date(c.hatch_date);
+          const days = Math.floor((now - hatch) / (1000 * 60 * 60 * 24));
+          if (days >= 18) className = "ready";
+        }
+
+        tr.className = className;
+        tr.innerHTML = `
+          <td>${c.couple_id}</td>
+          <td>${c.egg_count}</td>
+          <td>${c.treatment || "-"}</td>
+          <td>${c.hatch_date || "-"}</td>
+          <td>
+            <button onclick="del(${c.id})">${lang[currentLang].del}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
     }
+
+    async function del(id) {
+      await fetch(`/delete-couple/${id}`, { method: "DELETE" });
+      loadCouples();
+    }
+
+    document.getElementById("coupleForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        coupleId: coupleId.value,
+        eggCount: eggCount.value,
+        treatment: treatment.value,
+        treatmentStart: treatmentStart.value,
+        treatmentDays: treatmentDays.value,
+        hatchDate: hatchDate.value,
+      };
+      await fetch("/add-couple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      e.target.reset();
+      loadCouples();
+    });
 
     loadCouples();
   </script>
