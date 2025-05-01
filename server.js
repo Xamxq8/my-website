@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 
 console.log("DB_HOST from .env =", process.env.DB_HOST);
 
+// إنشاء الاتصال بقاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -25,6 +26,7 @@ connection.connect((err) => {
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
+// الجلب من المسار الرئيسي
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -58,6 +60,20 @@ app.delete('/delete-couple/:id', (req, res) => {
   });
 });
 
+// API: تحديث الأزواج
+app.put('/update-couple/:id', (req, res) => {
+  const { id } = req.params;
+  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
+  const query = `UPDATE couples SET 
+    couple_id = ?, egg_count = ?, treatment = ?, treatment_start = ?, treatment_days = ?, hatch_date = ? 
+    WHERE id = ?`;
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, id], (err) => {
+    if (err) return res.status(500).send('Error updating couple');
+    res.status(200).send('Couple updated');
+  });
+});
+
+// تشغيل السيرفر
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -1,3 +1,4 @@
+/* تنسيق عام للصفحة */
 body {
     font-family: Tahoma, sans-serif;
     background: #f5f5f5;
@@ -10,23 +11,40 @@ body {
     margin-top: 100px;
 }
 
+/* تنسيق الحقول المدخلة */
 input {
     display: block;
     margin: 10px auto;
     padding: 10px;
-    width: 200px;
+    width: 250px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
+/* تنسيق الأزرار */
 button {
     padding: 10px 20px;
     margin-top: 10px;
     cursor: pointer;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
 }
 
+button:hover {
+    background-color: #45a049;
+}
+
+/* تنسيق الرسالة عند الخطأ */
 #error-message {
     color: red;
+    margin-top: 10px;
 }
 
+/* قسم المحتوى */
 .section {
     background: white;
     margin: 20px;
@@ -34,6 +52,7 @@ button {
     border-radius: 10px;
 }
 
+/* الجداول */
 table {
     width: 100%;
     margin-top: 10px;
@@ -43,12 +62,51 @@ table {
 td, th {
     border: 1px solid #ccc;
     padding: 8px;
+    font-size: 14px;
+    text-align: center;
 }
 
+/* تنسيق الأعمدة المتعددة */
+th {
+    background-color: #f2f2f2;
+}
+
+/* تحسين التباين بين الحالات */
 .red {
     background-color: #ffcccc;
 }
 
 .green {
     background-color: #ccffcc;
+}
+
+#login-section, #dashboard {
+    margin-top: 50px;
+}
+
+/* تحسين تنسيق الزر في لوحة التحكم */
+#add-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#add-button:hover {
+    background-color: #45a049;
+}
+
+/* تنسيق الحقول التي تحتوي على بيانات */
+#no-eggs-title, #with-eggs-title, #with-treatment-title, #with-eggs-treatment-title, #chicks-title {
+    font-size: 18px;
+    margin-top: 20px;
+    color: #333;
+}
+
+#no-eggs-table, #with-eggs-table, #with-treatment-table, #with-eggs-treatment-table, #chicks-table {
+    margin-top: 20px;
+    width: 100%;
+    overflow: auto;
 }
