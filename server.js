@@ -1,5 +1,8 @@
+require('dotenv').config();
+console.log("DB_HOST from .env =", process.env.DB_HOST); // ← هذا السطر للاختبار
+
 const express = require('express');
-const { Client } = require('pg');
+const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 
 const app = express();
@@ -7,41 +10,46 @@ const port = 3000;
 
 app.use(bodyParser.json());
 
-const client = new Client({
-  connectionString: 'postgresql://farm_zajel_43uh_user:rOgWumVlUJsBEpiFpmnLrokD79pt33gv@dpg-d07cv1ruibrs73fcejsg-a.ohio-postgres.render.com/farm_zajel_43uh',
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   ssl: {
-    rejectUnauthorized: false,
-  },
+    rejectUnauthorized: true
+  }
 });
 
-client.connect()
-  .then(() => console.log('Connected to the database'))
-  .catch(err => console.error('Connection error', err.stack));
+connection.connect(err => {
+  if (err) {
+    console.error('Connection error:', err);
+    return;
+  }
+  console.log('Connected to PlanetScale');
+});
 
-// مسار لإضافة الأزواج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount } = req.body;
-
-  const query = 'INSERT INTO couples (couple_id, egg_count) VALUES ($1, $2)';
-  client.query(query, [coupleId, eggCount], (err, result) => {
+  const query = 'INSERT INTO couples (couple_id, egg_count) VALUES (?, ?)';
+  connection.query(query, [coupleId, eggCount], (err) => {
     if (err) {
+      console.error(err);
       return res.status(500).send('Error adding couple');
     }
-    res.status(200).send('Couple added successfully');
+    res.send('Couple added');
   });
 });
 
-// مسار لعرض الأزواج
 app.get('/get-couples', (req, res) => {
   const query = 'SELECT * FROM couples';
-  client.query(query, (err, result) => {
+  connection.query(query, (err, results) => {
     if (err) {
       return res.status(500).send('Error fetching couples');
     }
-    res.status(200).json(result.rows);
+    res.json(results);
   });
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
