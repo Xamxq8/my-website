@@ -7,7 +7,8 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// قاعدة البيانات
+console.log("DB_HOST from .env =", process.env.DB_HOST);
+
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -21,31 +22,20 @@ connection.connect((err) => {
   console.log('Connected to PlanetScale');
 });
 
-// إعدادات الموقع
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-// صفحة البداية
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API: إضافة مستخدم
-app.post('/add-user', (req, res) => {
-  const { username, password } = req.body;
-  const query = `INSERT INTO users (username, password) VALUES (?, ?)`;
-  connection.query(query, [username, password], (err) => {
-    if (err) return res.status(500).send('Error adding user');
-    res.status(200).send('User added successfully');
-  });
-});
-
 // API: إضافة زوج
 app.post('/add-couple', (req, res) => {
-  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, userId } = req.body;
-  const query = `INSERT INTO couples (couple_id, egg_count, treatment, treatment_start, treatment_days, hatch_date, user_id) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, userId], (err) => {
+  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
+  const query = `INSERT INTO couples 
+    (couple_id, egg_count, treatment, treatment_start, treatment_days, hatch_date)
+    VALUES (?, ?, ?, ?, ?, ?)`;
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate], (err) => {
     if (err) return res.status(500).send('Error saving couple');
     res.status(200).send('Couple saved');
   });
@@ -65,20 +55,6 @@ app.delete('/delete-couple/:id', (req, res) => {
   connection.query('DELETE FROM couples WHERE id = ?', [id], (err) => {
     if (err) return res.status(500).send('Error deleting couple');
     res.send('Couple deleted');
-  });
-});
-
-// API: تعديل زوج
-app.put('/update-couple/:id', (req, res) => {
-  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
-  const { id } = req.params;
-  const query = `UPDATE couples SET 
-    couple_id = ?, egg_count = ?, treatment = ?, 
-    treatment_start = ?, treatment_days = ?, hatch_date = ? 
-    WHERE id = ?`;
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, id], (err) => {
-    if (err) return res.status(500).send('Error updating couple');
-    res.send('Couple updated');
   });
 });
 
