@@ -1,71 +1,90 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <title>اختيار اللغة</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>إدارة الأزواج - Farm Zajel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background: #eee;
+    }
+  </style>
 </head>
 <body>
+  <h1>إضافة زوج جديد</h1>
+  <form id="coupleForm">
+    <input type="text" id="coupleId" placeholder="رقم الزوج" required>
+    <input type="number" id="eggCount" placeholder="عدد البيض" required>
+    <button type="submit">إضافة</button>
+  </form>
 
-<!-- شاشة اختيار اللغة -->
-<div id="language-selection">
-    <h2>اختر اللغة / भाषा चुनें</h2>
-    <button onclick="selectLanguage('ar')">العربية</button>
-    <button onclick="selectLanguage('hi')">हिन्दी</button>
-</div>
+  <h2>قائمة الأزواج</h2>
+  <table id="couplesTable">
+    <thead>
+      <tr>
+        <th>الزوج</th>
+        <th>عدد البيض</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<!-- شاشة تسجيل الدخول -->
-<div id="login-section" style="display:none;">
-    <h2 id="login-title"></h2>
-    <input type="text" id="username" placeholder="اسم المستخدم">
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <button onclick="login()" id="login-button">تسجيل الدخول</button>
-    <p id="error-message"></p>
-</div>
+  <script>
+    const form = document.getElementById('coupleForm');
+    const tableBody = document.querySelector('#couplesTable tbody');
 
-<!-- لوحة التحكم (التي تظهر بعد تسجيل الدخول بنجاح) -->
-<div id="dashboard" style="display:none;">
-    <h2 id="dashboard-title"></h2>
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const coupleId = document.getElementById('coupleId').value;
+      const eggCount = document.getElementById('eggCount').value;
 
-    <div id="sections-container">
+      await fetch('/add-couple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coupleId, eggCount })
+      });
 
-        <!-- الأزواج التي لا تحتوي على بيض -->
-        <div class="section">
-            <h3 id="no-eggs-title"></h3>
-            <table id="no-eggs-table"></table>
-        </div>
+      form.reset();
+      loadCouples();
+    });
 
-        <!-- الأزواج التي تحتوي على بيض -->
-        <div class="section">
-            <h3 id="with-eggs-title"></h3>
-            <table id="with-eggs-table"></table>
-        </div>
+    async function loadCouples() {
+      const res = await fetch('/get-couples');
+      const couples = await res.json();
 
-        <!-- الأزواج التي تتلقى علاجًا -->
-        <div class="section">
-            <h3 id="with-treatment-title"></h3>
-            <table id="with-treatment-table"></table>
-        </div>
+      tableBody.innerHTML = '';
+      couples.forEach(c => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${c.couple_id}</td><td>${c.egg_count}</td>`;
+        tableBody.appendChild(row);
+      });
+    }
 
-        <!-- الأزواج التي تحتوي على بيض وتتلقى علاجًا -->
-        <div class="section">
-            <h3 id="with-eggs-treatment-title"></h3>
-            <table id="with-eggs-treatment-table"></table>
-        </div>
-
-        <!-- عرض الفراخ تحت المراقبة -->
-        <div class="section">
-            <h3 id="chicks-title"></h3>
-            <table id="chicks-table"></table>
-        </div>
-
-    </div>
-
-    <!-- زر لإضافة سجل جديد -->
-    <button onclick="addNewRecord()" id="add-button">➕ إضافة سجل جديد</button>
-</div>
-
-<script src="script.js"></script>
-
+    loadCouples();
+  </script>
 </body>
 </html>

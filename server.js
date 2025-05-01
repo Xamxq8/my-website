@@ -1,15 +1,15 @@
-require('dotenv').config();
-console.log("DB_HOST from .env =", process.env.DB_HOST); // ← هذا السطر للاختبار
-
 const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.json());
+console.log("DB_HOST from .env =", process.env.DB_HOST);
 
+// ربط قاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -20,7 +20,7 @@ const connection = mysql.createConnection({
   }
 });
 
-connection.connect(err => {
+connection.connect((err) => {
   if (err) {
     console.error('Connection error:', err);
     return;
@@ -28,25 +28,37 @@ connection.connect(err => {
   console.log('Connected to PlanetScale');
 });
 
+app.use(bodyParser.json());
+app.use(express.static(__dirname)); // علشان يقدر يقرأ index.html
+
+// عرض الصفحة الرئيسية
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// API: إضافة زوج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount } = req.body;
+
   const query = 'INSERT INTO couples (couple_id, egg_count) VALUES (?, ?)';
-  connection.query(query, [coupleId, eggCount], (err) => {
+  connection.query(query, [coupleId, eggCount], (err, results) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Error adding couple');
     }
-    res.send('Couple added');
+    res.status(200).send('Couple added successfully');
   });
 });
 
+// API: جلب كل الأزواج
 app.get('/get-couples', (req, res) => {
   const query = 'SELECT * FROM couples';
   connection.query(query, (err, results) => {
     if (err) {
+      console.error(err);
       return res.status(500).send('Error fetching couples');
     }
-    res.json(results);
+    res.status(200).json(results);
   });
 });
 
