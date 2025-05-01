@@ -15,18 +15,20 @@
 </head>
 <body>
 
-  <h2>إضافة زوج جديد</h2>
+  <button onclick="toggleLang()">🌐</button>
+
+  <h2 id="title">إضافة زوج جديد</h2>
   <form id="coupleForm">
     <input type="text" id="coupleId" placeholder="رقم الزوج" required />
     <input type="number" id="eggCount" placeholder="عدد البيض" required />
     <input type="text" id="treatment" placeholder="العلاج" />
-    <input type="date" id="treatmentStart" required />
-    <input type="number" id="treatmentDays" placeholder="مدة العلاج (أيام)" required />
-    <input type="date" id="hatchDate" placeholder="تاريخ الفقس" required />
+    <input type="date" id="treatmentStart" />
+    <input type="number" id="treatmentDays" placeholder="مدة العلاج (أيام)" />
+    <input type="date" id="hatchDate" placeholder="تاريخ الفقس" />
     <button type="submit">إضافة</button>
   </form>
 
-  <h3>قائمة الأزواج</h3>
+  <h3 id="listTitle">قائمة الأزواج</h3>
   <table id="couplesTable">
     <thead>
       <tr>
@@ -41,6 +43,32 @@
   </table>
 
   <script>
+    const lang = {
+      ar: {
+        title: "إضافة زوج جديد",
+        listTitle: "قائمة الأزواج",
+        addBtn: "إضافة",
+        edit: "تعديل",
+        del: "حذف"
+      },
+      hi: {
+        title: "नया जोड़ा जोड़ें",
+        listTitle: "जोड़े की सूची",
+        addBtn: "जोड़ें",
+        edit: "संपादित करें",
+        del: "हटाएं"
+      }
+    };
+    let currentLang = "ar";
+
+    function toggleLang() {
+      currentLang = currentLang === "ar" ? "hi" : "ar";
+      document.getElementById("title").innerText = lang[currentLang].title;
+      document.getElementById("listTitle").innerText = lang[currentLang].listTitle;
+      document.querySelector("#coupleForm button").innerText = lang[currentLang].addBtn;
+      loadCouples();
+    }
+
     async function loadCouples() {
       const res = await fetch("/get-couples");
       const data = await res.json();
@@ -69,8 +97,7 @@
           <td>${c.treatment || "-"}</td>
           <td>${c.hatch_date || "-"}</td>
           <td>
-            <button onclick="del(${c.id})">حذف</button>
-            <button onclick="edit(${c.id})">تعديل</button>
+            <button onclick="del(${c.id})">${lang[currentLang].del}</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -80,10 +107,6 @@
     async function del(id) {
       await fetch(`/delete-couple/${id}`, { method: "DELETE" });
       loadCouples();
-    }
-
-    async function edit(id) {
-      // يمكنك إضافة منطق لتعديل الزوج
     }
 
     document.getElementById("coupleForm").addEventListener("submit", async (e) => {

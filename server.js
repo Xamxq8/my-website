@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 
 console.log("DB_HOST from .env =", process.env.DB_HOST);
 
+// ربط قاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -22,7 +23,7 @@ connection.connect((err) => {
   console.log('Connected to PlanetScale');
 });
 
-// إنشاء 4 مستخدمين تلقائيًا بكلمة مرور 1111
+// إضافة المستخدمين الأربعة تلقائيًا
 const users = [
   { username: 'user1', password: '1111' },
   { username: 'user2', password: '1111' },
@@ -30,22 +31,17 @@ const users = [
   { username: 'user4', password: '1111' }
 ];
 
-// إضافة المستخدمين إذا لم يكونوا موجودين في قاعدة البيانات
-users.forEach(user => {
-  connection.query('SELECT * FROM users WHERE username = ?', [user.username], (err, results) => {
-    if (err) throw err;
-    if (results.length === 0) {
-      connection.query('INSERT INTO users (username, password) VALUES (?, ?)', [user.username, user.password], (err) => {
-        if (err) throw err;
-        console.log(`User ${user.username} added successfully`);
-      });
-    }
+users.forEach((user) => {
+  const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+  connection.query(query, [user.username, user.password], (err) => {
+    if (err) console.error(`Error adding user ${user.username}:`, err);
   });
 });
 
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
+// عرض الصفحة الرئيسية
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -53,14 +49,10 @@ app.get('/', (req, res) => {
 // API: إضافة زوج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
-  const treatmentEnd = new Date(treatmentStart);
-  treatmentEnd.setDate(treatmentEnd.getDate() + parseInt(treatmentDays));
-
   const query = `INSERT INTO couples 
-    (couple_id, egg_count, treatment, treatment_start, treatment_end, treatment_days, hatch_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentEnd, treatmentDays, hatchDate], (err) => {
+    (couple_id, egg_count, treatment, treatment_start, treatment_days, hatch_date)
+    VALUES (?, ?, ?, ?, ?, ?)`;
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate], (err) => {
     if (err) return res.status(500).send('Error saving couple');
     res.status(200).send('Couple saved');
   });
@@ -68,7 +60,8 @@ app.post('/add-couple', (req, res) => {
 
 // API: جلب الأزواج
 app.get('/get-couples', (req, res) => {
-  connection.query('SELECT * FROM couples', (err, results) => {
+  const query = 'SELECT * FROM couples';
+  connection.query(query, (err, results) => {
     if (err) return res.status(500).send('Error loading couples');
     res.json(results);
   });
@@ -87,15 +80,11 @@ app.delete('/delete-couple/:id', (req, res) => {
 app.put('/update-couple/:id', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
   const { id } = req.params;
-  const treatmentEnd = new Date(treatmentStart);
-  treatmentEnd.setDate(treatmentEnd.getDate() + parseInt(treatmentDays));
-
   const query = `UPDATE couples SET 
     couple_id = ?, egg_count = ?, treatment = ?, 
-    treatment_start = ?, treatment_end = ?, treatment_days = ?, hatch_date = ?
+    treatment_start = ?, treatment_days = ?, hatch_date = ?
     WHERE id = ?`;
-
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentEnd, treatmentDays, hatchDate, id], (err) => {
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, id], (err) => {
     if (err) return res.status(500).send('Error updating couple');
     res.send('Couple updated');
   });
