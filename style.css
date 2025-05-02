@@ -1,54 +1,47 @@
 body {
-    font-family: Tahoma, sans-serif;
-    background: #f5f5f5;
-    text-align: center;
-    padding: 20px;
-    direction: rtl;
+  font-family: Arial, sans-serif;
+  background-color: #e3f2fd; /* تغيير اللون الخلفي إلى الأزرق الفاتح */
+  margin: 0;
+  padding: 0;
 }
 
-#language-selection, #login-section {
-    margin-top: 100px;
+section {
+  padding: 20px;
+  margin: 20px;
 }
 
 input {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    width: 200px;
+  padding: 10px;
+  margin: 10px;
+  width: 200px;
+  border: 1px solid #2196f3; /* وضع حدود باللون الأزرق */
 }
 
 button {
-    padding: 10px 20px;
-    margin-top: 10px;
-    cursor: pointer;
+  padding: 10px 20px;
+  background-color: #2196f3; /* الأزرق */
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-#error-message {
-    color: red;
-}
-
-.section {
-    background: white;
-    margin: 20px;
-    padding: 10px;
-    border-radius: 10px;
+button:hover {
+  background-color: #1976d2; /* الأزرق الداكن عند المرور */
 }
 
 table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
 }
 
-td, th {
-    border: 1px solid #ccc;
-    padding: 8px;
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
-.red {
-    background-color: #ffcccc;
-}
-
-.green {
-    background-color: #ccffcc;
+th {
+  background-color: #2196f3;
+  color: white;
 }
