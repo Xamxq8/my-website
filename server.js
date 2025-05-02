@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 
 console.log("DB_HOST from .env =", process.env.DB_HOST);
 
+// إنشاء الاتصال بقاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -25,17 +26,40 @@ connection.connect((err) => {
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
+// صفحة تسجيل الدخول
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'login.html')); // عرض صفحة تسجيل الدخول أولاً
+});
+
+// التحقق من بيانات تسجيل الدخول
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const users = {
+    "1111": "1111",
+    "2222": "2222",
+    "3333": "3333",
+    "4444": "5555"
+  };
+
+  if (users[username] === password) {
+    res.status(200).send('Login successful');
+  } else {
+    res.status(401).send('Invalid credentials');
+  }
 });
 
 // API: إضافة زوج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
+
+  // إذا لم يتم إدخال تاريخ الفقس، نستخدم التاريخ الحالي
+  const hatchDateToUse = hatchDate || new Date().toISOString().split('T')[0]; // يختار التاريخ الحالي إذا لم يتم إدخاله
+
   const query = `INSERT INTO couples 
     (couple_id, egg_count, treatment, treatment_start, treatment_days, hatch_date)
     VALUES (?, ?, ?, ?, ?, ?)`;
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate], (err) => {
+  
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDateToUse], (err) => {
     if (err) return res.status(500).send('Error saving couple');
     res.status(200).send('Couple saved');
   });
@@ -58,6 +82,30 @@ app.delete('/delete-couple/:id', (req, res) => {
   });
 });
 
+// API: تحديث الأزواج
+app.put('/update-couple/:id', (req, res) => {
+  const { id } = req.params;
+  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
+
+  // إذا تم إدخال تاريخ الفقس، نستخدمه، وإذا لم يتم إدخاله نستخدم التاريخ الحالي
+  const hatchDateToUse = hatchDate || new Date().toISOString().split('T')[0];
+
+  const query = `UPDATE couples SET 
+    couple_id = ?, egg_count = ?, treatment = ?, treatment_start = ?, treatment_days = ?, hatch_date = ? 
+    WHERE id = ?`;
+  
+  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDateToUse, id], (err) => {
+    if (err) return res.status(500).send('Error updating couple');
+    res.status(200).send('Couple updated');
+  });
+});
+
+// صفحة لوحة التحكم
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html')); // عرض صفحة الأزواج بعد تسجيل الدخول
+});
+
+// تشغيل السيرفر
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
