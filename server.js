@@ -30,7 +30,8 @@ app.use(session({
 }));
 
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use('/static', express.static(__dirname));
+
 
 // صفحة تسجيل الدخول
 app.get('/', (req, res) => {
