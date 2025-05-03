@@ -54,6 +54,12 @@ function translatePage() {
     document.getElementById("password").placeholder = t.passwordPlaceholder;
     document.getElementById("login-button").innerText = t.loginButton;
     document.getElementById("dashboard-title").innerText = t.dashboardTitle;
+    document.getElementById("no-eggs-title").innerText = t.noEggsTitle;
+    document.getElementById("with-eggs-title").innerText = t.withEggsTitle;
+    document.getElementById("with-treatment-title").innerText = t.withTreatmentTitle;
+    document.getElementById("with-eggs-treatment-title").innerText = t.withEggsTreatmentTitle;
+    document.getElementById("chicks-title").innerText = t.chicksTitle;
+    document.getElementById("add-button").innerText = t.addButton;
 }
 
 function login() {
@@ -63,7 +69,7 @@ function login() {
     if (users[user] === pass) {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        loadCouples(); // تحميل الأزواج بعد تسجيل الدخول
+        loadCouples();  // تحميل الأزواج بعد تسجيل الدخول
     } else {
         document.getElementById("error-message").innerText = translations[currentLanguage].error;
     }
@@ -139,33 +145,5 @@ function addNewRecord() {
     .then(response => response.json())
     .then(() => {
         loadCouples();  // إعادة تحميل الأزواج
-    });
-}
-
-function editRecord(index) {
-    let c = couples[index];
-    c.coupleId = prompt("رقم الزوج:", c.coupleId);
-    c.eggCount = parseInt(prompt("عدد البيض:", c.eggCount), 10);
-    c.treatment = prompt("اسم العلاج:", c.treatment);
-    c.treatmentDays = parseInt(prompt("مدة التحريم بالأيام:", c.treatmentDays), 10);
-    
-    fetch(`/update-couple/${c.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(c)
-    })
-    .then(response => response.json())
-    .then(() => {
-        loadCouples();  // إعادة تحميل الأزواج بعد التعديل
-    });
-}
-
-function deleteRecord(index) {
-    const couple = couples[index];
-    fetch(`/delete-couple/${couple.id}`, {
-        method: 'DELETE'
-    })
-    .then(() => {
-        loadCouples();  // إعادة تحميل الأزواج بعد الحذف
     });
 }
