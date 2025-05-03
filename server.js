@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// إعداد الاتصال بقاعدة البيانات
+// الاتصال بقاعدة البيانات PlanetScale
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -30,8 +30,6 @@ app.use(session({
 }));
 
 app.use(bodyParser.json());
-app.use('/static', express.static(__dirname));
-
 
 // صفحة تسجيل الدخول
 app.get('/', (req, res) => {
@@ -60,7 +58,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// عرض لوحة التحكم فقط للمسجلين
+// صفحة لوحة التحكم (محميّة)
 app.get('/dashboard', (req, res) => {
   if (!req.session.loggedIn) {
     return res.redirect('/');
@@ -68,7 +66,7 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// إضافة زوج
+// إضافة زوج جديد
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentDays } = req.body;
   const insertDate = new Date().toISOString().split('T')[0];
@@ -127,6 +125,9 @@ app.get('/get-chicks', (req, res) => {
     res.json(results);
   });
 });
+
+// تحميل ملفات js و css من المجلد
+app.use(express.static(__dirname));
 
 // تشغيل السيرفر
 app.listen(port, () => {
