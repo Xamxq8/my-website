@@ -2,29 +2,34 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم</title>
+    <title>لوحة إدارة الأزواج</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>مرحبًا بك في لوحة التحكم</h1>
 
-    <button onclick="window.location.href='/logout'">تسجيل الخروج</button>
+    <h1>لوحة التحكم</h1>
 
-    <h2>إدارة الأزواج</h2>
-    <button onclick="addCouple()">➕ إضافة زوج جديد</button>
+    <button id="add-button" onclick="addCouple()">➕ إضافة زوج جديد</button>
 
-    <h3>الأزواج بدون بيض</h3>
-    <table id="no-eggs-table"></table>
+    <div class="section">
+        <h2 id="no-eggs-title">🟠 الأزواج بدون بيض</h2>
+        <table id="no-eggs-table"></table>
+    </div>
 
-    <h3>الأزواج مع بيض</h3>
-    <table id="with-eggs-table"></table>
+    <div class="section">
+        <h2 id="with-eggs-title">🟢 الأزواج مع بيض</h2>
+        <table id="with-eggs-table"></table>
+    </div>
 
-    <h3>الأزواج مع علاج</h3>
-    <table id="with-treatment-table"></table>
+    <div class="section">
+        <h2 id="with-treatment-title">🟥 الأزواج تحت علاج</h2>
+        <table id="with-treatment-table"></table>
+    </div>
 
-    <h3>الأزواج مع بيض وعلاج</h3>
-    <table id="with-eggs-treatment-table"></table>
+    <div class="section">
+        <h2 id="chicks-title">🟡 الأزواج التي فقس بيضها (فراخ)</h2>
+        <table id="chicks-table"></table>
+    </div>
 
     <script src="script.js"></script>
 </body>
