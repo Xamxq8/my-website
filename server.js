@@ -85,7 +85,7 @@ app.post('/add-couple', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   connection.query(sql, [coupleId, eggCount, treatment, treatmentDays, insertDate, hatchDate, status], (err) => {
-    if (err) return res.status(500).send('Error adding couple');
+    if (err) return res.status(500).json({ error: 'Error adding couple' });
     res.json({ success: true });
   });
 });
