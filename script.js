@@ -1,8 +1,8 @@
 const users = {
-    1111: "1111",
-    2222: "2222",
-    3333: "3333",
-    4444: "5555"
+    "1111": "1111",
+    "2222": "2222",
+    "3333": "3333",
+    "4444": "5555"
 };
 
 let couples = [];
@@ -59,6 +59,7 @@ function translatePage() {
 function login() {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
+
     if (users[user] === pass) {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
@@ -68,7 +69,6 @@ function login() {
     }
 }
 
-// تحميل الأزواج من الـ Backend
 function loadCouples() {
     fetch('/get-couples')
         .then(response => response.json())
@@ -78,7 +78,6 @@ function loadCouples() {
         });
 }
 
-// عرض الأزواج في الجداول
 function renderTables() {
     document.getElementById("no-eggs-table").innerHTML = renderRows(couples.filter(c => c.egg_count === 0 && !c.treatment));
     document.getElementById("with-eggs-table").innerHTML = renderRows(couples.filter(c => c.egg_count > 0 && !c.treatment));
@@ -87,7 +86,6 @@ function renderTables() {
     document.getElementById("chicks-table").innerHTML = renderChicks();
 }
 
-// عرض البيانات في الجداول
 function renderRows(data) {
     const t = translations[currentLanguage];
     let rows = `<tr><th>${t.number}</th><th>${t.cage}</th><th>${t.eggs}</th><th>${t.hatchDays}</th><th>${t.treatment}</th><th>${t.treatmentDays}</th><th>${t.successfulHatches}</th><th>${t.edit}</th><th>${t.delete}</th></tr>`;
@@ -107,7 +105,6 @@ function renderRows(data) {
     return rows;
 }
 
-// عرض الفراخ
 function renderChicks() {
     const t = translations[currentLanguage];
     let rows = `<tr><th>${t.chickHatchDate}</th><th>${t.chickAge}</th></tr>`;
@@ -124,7 +121,6 @@ function calculateDays(date) {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// إضافة زوج جديد
 function addNewRecord() {
     let couple = {
         coupleId: prompt("رقم الزوج:"),
@@ -146,7 +142,6 @@ function addNewRecord() {
     });
 }
 
-// تعديل زوج
 function editRecord(index) {
     let c = couples[index];
     c.coupleId = prompt("رقم الزوج:", c.coupleId);
@@ -165,7 +160,6 @@ function editRecord(index) {
     });
 }
 
-// حذف زوج
 function deleteRecord(index) {
     const couple = couples[index];
     fetch(`/delete-couple/${couple.id}`, {
