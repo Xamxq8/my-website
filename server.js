@@ -41,9 +41,16 @@ app.post('/login', (req, res) => {
 
   if (users[username] === password) {
     res.status(200).send('Login successful');
+    // التوجيه إلى لوحة التحكم بعد التحقق من البيانات
+    res.redirect('/dashboard');
   } else {
     res.status(401).send('Invalid credentials');
   }
+});
+
+// صفحة لوحة التحكم
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html')); // عرض صفحة لوحة التحكم بعد تسجيل الدخول
 });
 
 // تشغيل السيرفر
