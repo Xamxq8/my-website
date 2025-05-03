@@ -1,74 +1,72 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f8f8f8;
-      padding: 20px;
-      text-align: center;
-    }
-    input {
-      padding: 10px;
-      margin: 10px;
-      width: 300px;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .error {
-      color: red;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 300px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
+    <h2>تسجيل الدخول</h2>
 
-  <h2>تسجيل الدخول</h2>
-  
-  <!-- نموذج تسجيل الدخول -->
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="اسم المستخدم" required />
-    <input type="password" id="password" placeholder="كلمة المرور" required />
-    <button type="submit">دخول</button>
-  </form>
-  
-  <div id="error-message" class="error"></div>
+    <!-- نموذج تسجيل الدخول -->
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="اسم المستخدم" required />
+        <input type="password" id="password" placeholder="كلمة المرور" required />
+        <button type="submit">دخول</button>
+    </form>
 
-  <script>
-    // التحقق من بيانات تسجيل الدخول
-    document.getElementById("loginForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+    <div id="error-message" class="error"></div>
 
-      // إرسال البيانات إلى السيرفر للتحقق من صحة تسجيل الدخول
-      fetch("/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, password })
-      })
-      .then(response => {
-        if (response.status === 200) {
-          window.location.href = '/dashboard'; // الانتقال إلى لوحة التحكم بعد تسجيل الدخول بنجاح
-        } else {
-          document.getElementById("error-message").innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
-        }
-      });
-    });
-  </script>
+    <script>
+        // التحقق من بيانات تسجيل الدخول
+        document.getElementById("loginForm").addEventListener("submit", (e) => {
+            e.preventDefault();
 
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // إرسال البيانات إلى السيرفر للتحقق من صحة تسجيل الدخول
+            fetch("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    window.location.href = '/dashboard'; // الانتقال إلى لوحة التحكم بعد تسجيل الدخول بنجاح
+                } else {
+                    document.getElementById("error-message").innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
+                }
+            });
+        });
+    </script>
 </body>
 </html>

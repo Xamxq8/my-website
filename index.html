@@ -3,41 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>لوحة التحكم</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1>مرحبًا بك في لوحة التحكم</h1>
 
-    <!-- صفحة تسجيل الدخول -->
-    <div id="login-section" class="container">
-        <h1>تسجيل الدخول</h1>
-        <form id="login-form">
-            <input type="text" id="username" placeholder="اسم المستخدم" required>
-            <input type="password" id="password" placeholder="كلمة المرور" required>
-            <button type="submit">دخول</button>
-            <div id="error-message"></div>
-        </form>
-    </div>
+    <button onclick="window.location.href='/logout'">تسجيل الخروج</button>
 
-    <!-- لوحة التحكم -->
-    <div id="dashboard-section" class="container" style="display:none;">
-        <h1>مرحبًا بك في لوحة التحكم</h1>
-        <p>هنا يمكنك إدارة الأزواج وبياناتهم.</p>
+    <h2>إدارة الأزواج</h2>
+    <button onclick="addCouple()">➕ إضافة زوج جديد</button>
 
-        <button onclick="addCouple()">➕ إضافة زوج جديد</button>
+    <h3>الأزواج بدون بيض</h3>
+    <table id="no-eggs-table"></table>
 
-        <h3>الأزواج بدون بيض</h3>
-        <table id="no-eggs-table"></table>
+    <h3>الأزواج مع بيض</h3>
+    <table id="with-eggs-table"></table>
 
-        <h3>الأزواج مع بيض</h3>
-        <table id="with-eggs-table"></table>
+    <h3>الأزواج مع علاج</h3>
+    <table id="with-treatment-table"></table>
 
-        <h3>الأزواج مع علاج</h3>
-        <table id="with-treatment-table"></table>
-
-        <h3>الأزواج مع بيض وعلاج</h3>
-        <table id="with-eggs-treatment-table"></table>
-    </div>
+    <h3>الأزواج مع بيض وعلاج</h3>
+    <table id="with-eggs-treatment-table"></table>
 
     <script src="script.js"></script>
 </body>
