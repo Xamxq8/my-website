@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// الاتصال بقاعدة البيانات PlanetScale
+// الاتصال بقاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -42,12 +42,12 @@ app.post('/login', (req, res) => {
   const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
 
   connection.query(query, [username, password], (err, results) => {
-    if (err) return res.status(500).send('Error checking credentials');
+    if (err) return res.status(500).json({ error: 'Database error' });
     if (results.length > 0) {
       req.session.loggedIn = true;
-      res.status(200).send('Login successful');
+      res.status(200).json({ success: true });
     } else {
-      res.status(401).send('Invalid credentials');
+      res.status(401).json({ error: 'Invalid credentials' });
     }
   });
 });
@@ -69,6 +69,11 @@ app.get('/dashboard', (req, res) => {
 // إضافة زوج جديد
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentDays } = req.body;
+
+  if (!coupleId) {
+    return res.status(400).json({ error: 'Missing coupleId' });
+  }
+
   const insertDate = new Date().toISOString().split('T')[0];
   let hatchDate = null;
   let status = 'no_eggs';
@@ -84,8 +89,12 @@ app.post('/add-couple', (req, res) => {
     INSERT INTO couples (couple_id, egg_count, treatment, treatment_days, insert_date, hatch_date, status)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
+
   connection.query(sql, [coupleId, eggCount, treatment, treatmentDays, insertDate, hatchDate, status], (err) => {
-    if (err) return res.status(500).json({ error: 'Error adding couple' });
+    if (err) {
+      console.error('DB Error during insert:', err);
+      return res.status(500).json({ error: 'Error adding couple' });
+    }
     res.json({ success: true });
   });
 });
@@ -111,7 +120,7 @@ app.get('/get-couples', (req, res) => {
   connection.query(updateToChicks, () => {
     connection.query(moveToChicks, () => {
       connection.query('SELECT * FROM couples', (err, results) => {
-        if (err) return res.status(500).send('Error fetching couples');
+        if (err) return res.status(500).json({ error: 'Error fetching couples' });
         res.json(results);
       });
     });
@@ -121,12 +130,12 @@ app.get('/get-couples', (req, res) => {
 // جلب الفراخ
 app.get('/get-chicks', (req, res) => {
   connection.query('SELECT * FROM chicks', (err, results) => {
-    if (err) return res.status(500).send('Error fetching chicks');
+    if (err) return res.status(500).json({ error: 'Error fetching chicks' });
     res.json(results);
   });
 });
 
-// تحميل ملفات js و css من المجلد
+// تفعيل تحميل ملفات js و css
 app.use(express.static(__dirname));
 
 // تشغيل السيرفر
