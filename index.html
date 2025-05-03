@@ -3,48 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع الأزواج</title>
+    <title>تسجيل الدخول</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- اختيار اللغة -->
-    <section id="language-selection" style="display:block;">
-        <button onclick="selectLanguage('ar')">العربية</button>
-        <button onclick="selectLanguage('hi')">हिन्दी</button>
-    </section>
-
-    <!-- تسجيل الدخول -->
-    <section id="login-section" style="display:none;">
-        <h1 id="login-title">تسجيل الدخول</h1>
-        <input type="text" id="username" placeholder="اسم المستخدم">
-        <input type="password" id="password" placeholder="كلمة المرور">
-        <button id="login-button" onclick="login()">دخول</button>
-        <div id="error-message"></div>
-    </section>
-
-    <!-- لوحة التحكم -->
-    <section id="dashboard" style="display:none;">
-        <h1 id="dashboard-title">لوحة التحكم</h1>
-        <button id="add-button" onclick="addNewRecord()">➕ إضافة زوج جديد</button>
-
-        <!-- جداول الأزواج -->
-        <div id="no-eggs-title"></div>
-        <table id="no-eggs-table"></table>
-
-        <div id="with-eggs-title"></div>
-        <table id="with-eggs-table"></table>
-
-        <div id="with-treatment-title"></div>
-        <table id="with-treatment-table"></table>
-
-        <div id="with-eggs-treatment-title"></div>
-        <table id="with-eggs-treatment-table"></table>
-
-        <!-- جداول الفراخ -->
-        <div id="chicks-title"></div>
-        <table id="chicks-table"></table>
-    </section>
+    <div class="container">
+        <h1>تسجيل الدخول</h1>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="اسم المستخدم" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
+            <button type="submit">دخول</button>
+            <div id="error-message"></div>
+        </form>
+    </div>
 
     <script src="script.js"></script>
 </body>

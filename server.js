@@ -7,8 +7,6 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log("DB_HOST from .env =", process.env.DB_HOST);
-
 // إنشاء الاتصال بقاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -28,7 +26,7 @@ app.use(express.static(__dirname));
 
 // صفحة تسجيل الدخول
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html')); // عرض صفحة تسجيل الدخول أولاً
+  res.sendFile(path.join(__dirname, 'index.html')); // عرض صفحة تسجيل الدخول أولاً
 });
 
 // التحقق من بيانات تسجيل الدخول
@@ -46,53 +44,6 @@ app.post('/login', (req, res) => {
   } else {
     res.status(401).send('Invalid credentials');
   }
-});
-
-// API: إضافة زوج
-app.post('/add-couple', (req, res) => {
-  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
-  const query = `INSERT INTO couples 
-    (couple_id, egg_count, treatment, treatment_start, treatment_days, hatch_date)
-    VALUES (?, ?, ?, ?, ?, ?)`;
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate], (err) => {
-    if (err) return res.status(500).send('Error saving couple');
-    res.status(200).send('Couple saved');
-  });
-});
-
-// API: جلب الأزواج
-app.get('/get-couples', (req, res) => {
-  connection.query('SELECT * FROM couples', (err, results) => {
-    if (err) return res.status(500).send('Error loading couples');
-    res.json(results);
-  });
-});
-
-// API: حذف زوج
-app.delete('/delete-couple/:id', (req, res) => {
-  const { id } = req.params;
-  connection.query('DELETE FROM couples WHERE id = ?', [id], (err) => {
-    if (err) return res.status(500).send('Error deleting couple');
-    res.send('Couple deleted');
-  });
-});
-
-// API: تحديث الأزواج
-app.put('/update-couple/:id', (req, res) => {
-  const { id } = req.params;
-  const { coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate } = req.body;
-  const query = `UPDATE couples SET 
-    couple_id = ?, egg_count = ?, treatment = ?, treatment_start = ?, treatment_days = ?, hatch_date = ? 
-    WHERE id = ?`;
-  connection.query(query, [coupleId, eggCount, treatment, treatmentStart, treatmentDays, hatchDate, id], (err) => {
-    if (err) return res.status(500).send('Error updating couple');
-    res.status(200).send('Couple updated');
-  });
-});
-
-// صفحة لوحة التحكم
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html')); // عرض صفحة الأزواج بعد تسجيل الدخول
 });
 
 // تشغيل السيرفر
