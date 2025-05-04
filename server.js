@@ -8,7 +8,6 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// الاتصال بقاعدة البيانات PlanetScale
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -22,7 +21,7 @@ connection.connect((err) => {
   console.log('Connected to PlanetScale');
 });
 
-// إعداد الجلسة
+// الجلسة
 app.use(session({
   secret: 'secret-key-123',
   resave: false,
@@ -31,55 +30,50 @@ app.use(session({
 
 app.use(bodyParser.json());
 
-// صفحة تسجيل الدخول
+// تحميل ملفات static (js / css / html)
+app.use(express.static(__dirname));
+
+// تسجيل الدخول
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-// تسجيل الدخول
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-
-  connection.query(query, [username, password], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    if (results.length > 0) {
-      req.session.loggedIn = true;
-      res.status(200).json({ success: true });
-    } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+  connection.query(
+    'SELECT * FROM users WHERE username = ? AND password = ?',
+    [username, password],
+    (err, results) => {
+      if (err) return res.status(500).send('Error');
+      if (results.length > 0) {
+        req.session.loggedIn = true;
+        res.status(200).send('Login successful');
+      } else {
+        res.status(401).send('Invalid credentials');
+      }
     }
-  });
+  );
 });
 
-// تسجيل الخروج
+app.get('/dashboard', (req, res) => {
+  if (!req.session.loggedIn) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/');
 });
 
-// صفحة لوحة التحكم
-app.get('/dashboard', (req, res) => {
-  if (!req.session.loggedIn) {
-    return res.redirect('/');
-  }
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
 // إضافة زوج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentDays } = req.body;
-
-  if (!coupleId) {
-    return res.status(400).json({ error: 'Missing coupleId' });
-  }
-
   const insertDate = new Date().toISOString().split('T')[0];
   let hatchDate = null;
   let status = 'no_eggs';
 
   if (eggCount > 0) {
-    hatchDate = new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    hatchDate = new Date(Date.now() + 18 * 86400000).toISOString().split('T')[0];
     status = 'eggs';
   } else if (treatment) {
     status = 'treatment';
@@ -89,11 +83,10 @@ app.post('/add-couple', (req, res) => {
     INSERT INTO couples (couple_id, egg_count, treatment, treatment_days, insert_date, hatch_date, status)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
-
   connection.query(sql, [coupleId, eggCount, treatment, treatmentDays, insertDate, hatchDate, status], (err) => {
     if (err) {
-      console.error('DB Error during insert:', err);
-      return res.status(500).json({ error: 'Error adding couple' });
+      console.error("DB Error during insert:", err);
+      return res.status(500).send("Error adding couple");
     }
     res.json({ success: true });
   });
@@ -108,22 +101,21 @@ app.put('/update-couple/:id', (req, res) => {
   let hatchDate = null;
 
   if (eggCount > 0) {
-    hatchDate = new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    hatchDate = new Date(Date.now() + 18 * 86400000).toISOString().split('T')[0];
     status = 'eggs';
   } else if (treatment) {
     status = 'treatment';
   }
 
   const sql = `
-    UPDATE couples 
+    UPDATE couples
     SET egg_count = ?, treatment = ?, treatment_days = ?, hatch_date = ?, status = ?
     WHERE id = ?
   `;
-
   connection.query(sql, [eggCount, treatment, treatmentDays, hatchDate, status, coupleId], (err) => {
     if (err) {
-      console.error('Update Error:', err);
-      return res.status(500).json({ error: 'Error updating couple' });
+      console.error("DB Error during update:", err);
+      return res.status(500).send("Error updating couple");
     }
     res.json({ success: true });
   });
@@ -133,24 +125,22 @@ app.put('/update-couple/:id', (req, res) => {
 app.delete('/delete-couple/:id', (req, res) => {
   const coupleId = req.params.id;
   const sql = 'DELETE FROM couples WHERE id = ?';
-
   connection.query(sql, [coupleId], (err) => {
     if (err) {
-      console.error('Delete Error:', err);
-      return res.status(500).json({ error: 'Error deleting couple' });
+      console.error("DB Error during delete:", err);
+      return res.status(500).json({ error: "Error deleting couple" });
     }
     res.json({ success: true });
   });
 });
 
-// تحديث وتحميل بيانات الأزواج
+// جلب الأزواج + تحديث الحالات
 app.get('/get-couples', (req, res) => {
   const updateToChicks = `
     UPDATE couples
     SET status = 'chicks'
     WHERE status = 'eggs' AND CURDATE() >= hatch_date
   `;
-
   const moveToChicks = `
     INSERT INTO chicks (couple_id, hatch_date, days_since_hatch, days_until_slaughter)
     SELECT couple_id, hatch_date,
@@ -160,11 +150,10 @@ app.get('/get-couples', (req, res) => {
     WHERE status = 'chicks'
       AND couple_id NOT IN (SELECT couple_id FROM chicks)
   `;
-
   connection.query(updateToChicks, () => {
     connection.query(moveToChicks, () => {
       connection.query('SELECT * FROM couples', (err, results) => {
-        if (err) return res.status(500).json({ error: 'Error fetching couples' });
+        if (err) return res.status(500).send('Error fetching couples');
         res.json(results);
       });
     });
@@ -174,15 +163,11 @@ app.get('/get-couples', (req, res) => {
 // جلب الفراخ
 app.get('/get-chicks', (req, res) => {
   connection.query('SELECT * FROM chicks', (err, results) => {
-    if (err) return res.status(500).json({ error: 'Error fetching chicks' });
+    if (err) return res.status(500).send('Error fetching chicks');
     res.json(results);
   });
 });
 
-// تفعيل ملفات ثابتة
-app.use(express.static(__dirname));
-
-// تشغيل السيرفر
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
