@@ -2,7 +2,6 @@ const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const path = require('path');
-const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
@@ -21,48 +20,12 @@ connection.connect((err) => {
   console.log('Connected to PlanetScale');
 });
 
-// الجلسة
-app.use(session({
-  secret: 'secret-key-123',
-  resave: false,
-  saveUninitialized: true
-}));
-
 app.use(bodyParser.json());
-
-// تحميل ملفات static (js / css / html)
 app.use(express.static(__dirname));
 
-// تسجيل الدخول
+// الصفحة الرئيسية = index.html مباشرة
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  connection.query(
-    'SELECT * FROM users WHERE username = ? AND password = ?',
-    [username, password],
-    (err, results) => {
-      if (err) return res.status(500).send('Error');
-      if (results.length > 0) {
-        req.session.loggedIn = true;
-        res.status(200).send('Login successful');
-      } else {
-        res.status(401).send('Invalid credentials');
-      }
-    }
-  );
-});
-
-app.get('/dashboard', (req, res) => {
-  if (!req.session.loggedIn) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
 });
 
 // إضافة زوج
@@ -93,7 +56,7 @@ app.post('/add-couple', (req, res) => {
 });
 
 // تعديل زوج
-app.put('/update-couple/:id', (req, res) => {
+app.put('/edit-couple/:id', (req, res) => {
   const coupleId = req.params.id;
   const { eggCount, treatment, treatmentDays } = req.body;
 
