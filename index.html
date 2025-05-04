@@ -3,30 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>لوحة التحكم</title>
+  <title>نظام إدارة الأزواج والفراخ</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; direction: rtl; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    tr.red { background-color: #f8d7da; }
+    tr.green { background-color: #d4edda; }
+    button { margin: 5px; padding: 8px 12px; }
+  </style>
 </head>
 <body>
-  <h1>نظام إدارة الأزواج والفراخ</h1>
+  <h1 style="text-align:center">نظام إدارة الأزواج والفراخ</h1>
 
   <div style="text-align: center;">
     <button onclick="addCouple()">➕ إضافة زوج</button>
     <button onclick="loadCouples()">🔄 تحديث</button>
-    <button onclick="location.href='/logout'">🚪 تسجيل الخروج</button>
+    <input type="text" id="searchInput" placeholder="ابحث برقم الزوج" oninput="searchCouples()" style="padding:8px;width:200px;">
   </div>
 
-  <h2>أزواج بدون بيض</h2>
-  <table id="no-eggs-table"></table>
+  <table id="couples-table"></table>
 
-  <h2>أزواج مع بيض</h2>
-  <table id="with-eggs-table"></table>
+  <script>
+    let allCouples = [];
 
-  <h2>أزواج تحت العلاج</h2>
-  <table id="with-treatment-table"></table>
+    function addCouple() {
+      const coupleId = prompt("رقم الزوج:");
+      const eggCount = parseInt(prompt("عدد البيض:")) || 0;
+      const treatment = prompt("اسم العلاج (إن وجد):");
+      const treatmentDays = treatment ? parseInt(prompt("مدة العلاج (أيام):")) : null;
 
-  <h2>الأفراخ</h2>
-  <table id="chicks-table"></table>
+      fetch('/add-couple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coupleId, eggCount, treatment, treatmentDays })
+      })
+      .then(res => res.json())
+      .then(() => loadCouples());
+    }
 
-  <script src="script.js"></script>
+    function editCouple(id) {
+      const eggCount = parseInt(prompt("تعديل عدد البيض:")) || 0;
+      const treatment = prompt("تعديل اسم العلاج:");
+      const treatmentDays = treatment ? parseInt(prompt("تعديل مدة العلاج:")) : null;
+
+      fetch(`/edit-couple/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eggCount, treatment, treatmentDays })
+      })
+      .then(() => loadCouples());
+    }
+
+    function deleteCouple(id) {
+      if (confirm("هل أنت متأكد أنك تريد حذف هذا الزوج؟")) {
+        fetch(`/delete-couple/${id}`, { method: 'DELETE' })
+          .then(() => loadCouples());
+      }
+    }
+
+    function loadCouples() {
+      fetch('/get-couples')
+        .then(res => res.json())
+        .then(data => {
+          allCouples = data;
+          renderTable(data);
+        });
+    }
+
+    function renderTable(data) {
+      let html = `<tr>
+        <th>#</th><th>رقم الزوج</th><th>بيض</th><th>علاج</th><th>تاريخ الفقس</th>
+        <th>العد التنازلي</th><th>تعديل</th><th>حذف</th>
+      </tr>`;
+
+      data.forEach((c, i) => {
+        const daysLeft = c.hatch_date ? calcDaysLeft(c.hatch_date) : '-';
+        const rowClass = c.status === 'treatment' ? 'red' : (c.status === 'eggs' ? 'green' : '');
+        html += `
+          <tr class="${rowClass}">
+            <td>${i + 1}</td>
+            <td>${c.couple_id}</td>
+            <td>${c.egg_count}</td>
+            <td>${c.treatment || '-'}</td>
+            <td>${c.hatch_date || '-'}</td>
+            <td>${daysLeft}</td>
+            <td><button onclick="editCouple(${c.id})">✏️</button></td>
+            <td><button onclick="deleteCouple(${c.id})">🗑️</button></td>
+          </tr>`;
+      });
+      document.getElementById("couples-table").innerHTML = html;
+    }
+
+    function calcDaysLeft(hatchDate) {
+      const now = new Date();
+      const target = new Date(hatchDate);
+      const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+      return diff >= 0 ? `${diff} يوم` : 'فقس';
+    }
+
+    function searchCouples() {
+      const term = document.getElementById("searchInput").value;
+      const filtered = allCouples.filter(c => c.couple_id.includes(term));
+      renderTable(filtered);
+    }
+
+    window.onload = loadCouples;
+  </script>
 </body>
 </html>
