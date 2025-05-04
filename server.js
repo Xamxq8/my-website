@@ -2,11 +2,13 @@ const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// الاتصال بقاعدة البيانات
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -20,12 +22,46 @@ connection.connect((err) => {
   console.log('Connected to PlanetScale');
 });
 
+// الجلسات
+app.use(session({
+  secret: 'secret-key-123',
+  resave: false,
+  saveUninitialized: true
+}));
+
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-// الصفحة الرئيسية = index.html مباشرة
+// صفحة تسجيل الدخول
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// التحقق من تسجيل الدخول
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+  connection.query(query, [username, password], (err, results) => {
+    if (err) return res.status(500).send('خطأ في التحقق');
+    if (results.length > 0) {
+      req.session.loggedIn = true;
+      res.status(200).send('تم الدخول');
+    } else {
+      res.status(401).send('بيانات غير صحيحة');
+    }
+  });
+});
+
+// صفحة التحكم
+app.get('/dashboard', (req, res) => {
+  if (!req.session.loggedIn) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// تسجيل الخروج
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
 });
 
 // إضافة زوج
@@ -55,35 +91,6 @@ app.post('/add-couple', (req, res) => {
   });
 });
 
-// تعديل زوج
-app.put('/edit-couple/:id', (req, res) => {
-  const coupleId = req.params.id;
-  const { eggCount, treatment, treatmentDays } = req.body;
-
-  let status = 'no_eggs';
-  let hatchDate = null;
-
-  if (eggCount > 0) {
-    hatchDate = new Date(Date.now() + 18 * 86400000).toISOString().split('T')[0];
-    status = 'eggs';
-  } else if (treatment) {
-    status = 'treatment';
-  }
-
-  const sql = `
-    UPDATE couples
-    SET egg_count = ?, treatment = ?, treatment_days = ?, hatch_date = ?, status = ?
-    WHERE id = ?
-  `;
-  connection.query(sql, [eggCount, treatment, treatmentDays, hatchDate, status, coupleId], (err) => {
-    if (err) {
-      console.error("DB Error during update:", err);
-      return res.status(500).send("Error updating couple");
-    }
-    res.json({ success: true });
-  });
-});
-
 // حذف زوج
 app.delete('/delete-couple/:id', (req, res) => {
   const coupleId = req.params.id;
@@ -97,7 +104,7 @@ app.delete('/delete-couple/:id', (req, res) => {
   });
 });
 
-// جلب الأزواج + تحديث الحالات
+// جلب الأزواج وتحديث الفقس
 app.get('/get-couples', (req, res) => {
   const updateToChicks = `
     UPDATE couples
@@ -131,6 +138,7 @@ app.get('/get-chicks', (req, res) => {
   });
 });
 
+// تشغيل السيرفر
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -59,13 +59,8 @@ function loadCouples() {
     fetch('/get-couples')
         .then(res => res.json())
         .then(data => {
-            const noEggs = data.filter(c => c.status === 'no_eggs');
-            const withEggs = data.filter(c => c.status === 'eggs');
-            const underTreatment = data.filter(c => c.status === 'treatment');
-
-            document.getElementById('no-eggs-table').innerHTML = renderCouples(noEggs);
-            document.getElementById('with-eggs-table').innerHTML = renderCouples(withEggs);
-            document.getElementById('with-treatment-table').innerHTML = renderCouples(underTreatment);
+            const sorted = data.sort((a, b) => parseInt(a.couple_id) - parseInt(b.couple_id));
+            document.getElementById('no-eggs-table').innerHTML = renderCouples(sorted);
         });
 
     fetch('/get-chicks')
