@@ -1,27 +1,30 @@
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>لوحة التحكم - إدارة الأزواج</title>
+  <title>لوحة التحكم</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>لوحة التحكم</h1>
-  <button onclick="addCouple()">➕ إضافة زوج جديد</button>
-  <button onclick="location.href='/logout'">تسجيل الخروج</button>
+  <h1>نظام إدارة الأزواج والفراخ</h1>
 
-  <h2>الأزواج بدون بيض</h2>
+  <div style="text-align: center;">
+    <button onclick="addCouple()">➕ إضافة زوج</button>
+    <button onclick="loadCouples()">🔄 تحديث</button>
+    <button onclick="location.href='/logout'">🚪 تسجيل الخروج</button>
+  </div>
+
+  <h2>أزواج بدون بيض</h2>
   <table id="no-eggs-table"></table>
 
-  <h2>الأزواج تحتهم بيض</h2>
+  <h2>أزواج مع بيض</h2>
   <table id="with-eggs-table"></table>
 
-  <h2>الأزواج تحت العلاج</h2>
+  <h2>أزواج تحت العلاج</h2>
   <table id="with-treatment-table"></table>
 
-  <h2>الفراخ</h2>
+  <h2>الأفراخ</h2>
   <table id="chicks-table"></table>
 
   <script src="script.js"></script>
