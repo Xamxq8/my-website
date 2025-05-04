@@ -40,6 +40,20 @@ function addCouple() {
     .then(() => loadCouples());
 }
 
+// حذف زوج
+function deleteCouple(id) {
+    if (!confirm('هل تريد حذف هذا الزوج؟')) return;
+
+    fetch(`/delete-couple/${id}`, {
+        method: 'DELETE'
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('فشل في الحذف');
+        loadCouples();
+    })
+    .catch(err => alert(err.message));
+}
+
 // تحميل بيانات الأزواج
 function loadCouples() {
     fetch('/get-couples')
@@ -63,17 +77,18 @@ function loadCouples() {
 
 // توليد صفوف جدول الأزواج
 function renderCouples(couples) {
-    let html = `<tr><th>رقم الزوج</th><th>البيض</th><th>العلاج</th><th>تاريخ الفقس</th><th>العد التنازلي</th></tr>`;
+    let html = `<tr><th>رقم الزوج</th><th>البيض</th><th>العلاج</th><th>تاريخ الفقس</th><th>العد التنازلي</th><th>حذف</th></tr>`;
     couples.forEach(c => {
         const daysLeft = c.hatch_date ? calcDaysLeft(c.hatch_date) : '-';
         const color = c.status === 'treatment' ? 'red' : (c.status === 'eggs' ? 'green' : '');
         html += `
-            <tr class="${color}">
+            <tr style="background-color: ${color};">
                 <td>${c.couple_id}</td>
                 <td>${c.egg_count}</td>
                 <td>${c.treatment || '-'}</td>
                 <td>${c.hatch_date || '-'}</td>
                 <td>${daysLeft}</td>
+                <td><button onclick="deleteCouple(${c.id})">🗑</button></td>
             </tr>
         `;
     });
@@ -104,5 +119,5 @@ function calcDaysLeft(hatchDate) {
     return diff >= 0 ? `${diff} يوم` : 'فقس';
 }
 
-// تشغيل عند تحميل الصفحة
+// تحميل البيانات عند بداية الصفحة
 window.onload = loadCouples;
