@@ -2,22 +2,22 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>إدارة الأزواج</title>
+  <title>لوحة التحكم</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>إدارة الأزواج</h1>
+  <div class="container">
+    <h1>إدارة الأزواج والفراخ</h1>
 
-  <div style="text-align: center;">
     <button onclick="addCouple()">➕ إضافة زوج</button>
+    <a href="/logout" class="logout">تسجيل الخروج</a>
+
+    <h2>كل الأزواج</h2>
+    <table id="no-eggs-table" class="data-table"></table>
+
+    <h2>الفراخ</h2>
+    <table id="chicks-table" class="data-table"></table>
   </div>
-
-  <h2>كل الأزواج</h2>
-  <table id="no-eggs-table"></table>
-
-  <h2>الفراخ</h2>
-  <table id="chicks-table"></table>
 
   <script src="script.js"></script>
 </body>
