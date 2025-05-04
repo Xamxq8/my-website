@@ -1,112 +1,62 @@
-/* تنسيق عام للصفحة */
+
 body {
-    font-family: Tahoma, sans-serif;
-    background: #f5f5f5;
-    text-align: center;
-    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
     direction: rtl;
-}
-
-#language-selection, #login-section {
-    margin-top: 100px;
-}
-
-/* تنسيق الحقول المدخلة */
-input {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    width: 250px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-/* تنسيق الأزرار */
-button {
-    padding: 10px 20px;
-    margin-top: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-/* تنسيق الرسالة عند الخطأ */
-#error-message {
-    color: red;
-    margin-top: 10px;
-}
-
-/* قسم المحتوى */
-.section {
-    background: white;
-    margin: 20px;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-/* الجداول */
-table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
-}
-
-td, th {
-    border: 1px solid #ccc;
-    padding: 8px;
-    font-size: 14px;
+  }
+  
+  h1, h2 {
     text-align: center;
-}
-
-/* تنسيق الأعمدة المتعددة */
-th {
-    background-color: #f2f2f2;
-}
-
-/* تحسين التباين بين الحالات */
-.red {
-    background-color: #ffcccc;
-}
-
-.green {
-    background-color: #ccffcc;
-}
-
-#login-section, #dashboard {
-    margin-top: 50px;
-}
-
-/* تحسين تنسيق الزر في لوحة التحكم */
-#add-button {
-    background-color: #4CAF50;
-    color: white;
+    color: #333;
+  }
+  
+  button {
+    margin: 10px;
     padding: 10px 20px;
+    font-size: 16px;
     border: none;
+    background-color: #007bff;
+    color: white;
     border-radius: 5px;
     cursor: pointer;
-}
-
-#add-button:hover {
-    background-color: #45a049;
-}
-
-/* تنسيق الحقول التي تحتوي على بيانات */
-#no-eggs-title, #with-eggs-title, #with-treatment-title, #with-eggs-treatment-title, #chicks-title {
-    font-size: 18px;
-    margin-top: 20px;
-    color: #333;
-}
-
-#no-eggs-table, #with-eggs-table, #with-treatment-table, #with-eggs-treatment-table, #chicks-table {
-    margin-top: 20px;
-    width: 100%;
-    overflow: auto;
-}
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: white;
+  }
+  
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  th {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  tr.green {
+    background-color: #d4edda;
+  }
+  
+  tr.red {
+    background-color: #f8d7da;
+  }
+  
+  input, select {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
