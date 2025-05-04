@@ -1,118 +1,150 @@
-// تسجيل الدخول
-document.getElementById('login-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+const express = require('express');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+const path = require('path');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
 
-    fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    }).then(response => {
-        if (response.status === 200) {
-            window.location.href = '/dashboard';
-        } else {
-            document.getElementById('error-message').innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
-        }
+const app = express();
+const port = process.env.PORT || 3000;
+
+// الاتصال بقاعدة البيانات
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: { rejectUnauthorized: true }
+});
+
+connection.connect((err) => {
+  if (err) return console.error('Connection error:', err);
+  console.log('Connected to PlanetScale');
+});
+
+// إعداد الجلسة
+app.use(session({
+  secret: 'secret-key-123',
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.use(bodyParser.json());
+app.use(express.static(__dirname));
+
+// صفحة تسجيل الدخول
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// التحقق من تسجيل الدخول
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const query = 'SELECT * FROM users WHERE username = ?';
+
+  connection.query(query, [username], (err, results) => {
+    if (err || results.length === 0) return res.status(401).send('بيانات غير صحيحة');
+
+    const user = results[0];
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (result) {
+        req.session.loggedIn = true;
+        res.status(200).send('تم الدخول');
+      } else {
+        res.status(401).send('بيانات غير صحيحة');
+      }
     });
+  });
+});
+
+// تسجيل الخروج
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
+});
+
+// عرض لوحة التحكم
+app.get('/dashboard', (req, res) => {
+  if (!req.session.loggedIn) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // إضافة زوج جديد
-function addCouple() {
-    const coupleId = prompt("رقم الزوج:");
-    const eggCount = parseInt(prompt("عدد البيض:")) || 0;
-    const treatment = prompt("اسم العلاج (إن وجد):");
-    const treatmentDays = treatment ? parseInt(prompt("مدة العلاج (أيام):")) : null;
+app.post('/add-couple', (req, res) => {
+  const { coupleId, eggCount, treatment, treatmentDays } = req.body;
+  const insertDate = new Date().toISOString().split('T')[0];
+  let hatchDate = null;
+  let status = 'no_eggs';
 
-    const data = {
-        coupleId,
-        eggCount,
-        treatment,
-        treatmentDays
-    };
+  if (eggCount > 0) {
+    hatchDate = new Date(Date.now() + 18 * 86400000).toISOString().split('T')[0];
+    status = 'eggs';
+  } else if (treatment) {
+    status = 'treatment';
+  }
 
-    fetch('/add-couple', {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(() => loadCouples());
-}
+  const sql = `
+    INSERT INTO couples (couple_id, egg_count, treatment, treatment_days, insert_date, hatch_date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  connection.query(sql, [coupleId, eggCount, treatment, treatmentDays, insertDate, hatchDate, status], (err) => {
+    if (err) {
+      console.error("DB Error during insert:", err);
+      return res.status(500).send("Error adding couple");
+    }
+    res.json({ success: true });
+  });
+});
 
 // حذف زوج
-function deleteCouple(id) {
-    if (!confirm('هل تريد حذف هذا الزوج؟')) return;
+app.delete('/delete-couple/:id', (req, res) => {
+  const coupleId = req.params.id;
+  const sql = 'DELETE FROM couples WHERE id = ?';
+  connection.query(sql, [coupleId], (err) => {
+    if (err) {
+      console.error("DB Error during delete:", err);
+      return res.status(500).json({ error: "Error deleting couple" });
+    }
+    res.json({ success: true });
+  });
+});
 
-    fetch(`/delete-couple/${id}`, {
-        method: 'DELETE'
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('فشل في الحذف');
-        loadCouples();
-    })
-    .catch(err => alert(err.message));
-}
-
-// تحميل بيانات الأزواج
-function loadCouples() {
-    fetch('/get-couples')
-        .then(res => res.json())
-        .then(data => {
-            const sorted = data.sort((a, b) => parseInt(a.couple_id) - parseInt(b.couple_id));
-            document.getElementById('no-eggs-table').innerHTML = renderCouples(sorted);
-        });
-
-    fetch('/get-chicks')
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('chicks-table').innerHTML = renderChicks(data);
-        });
-}
-
-// توليد صفوف جدول الأزواج
-function renderCouples(couples) {
-    let html = `<tr><th>رقم الزوج</th><th>البيض</th><th>العلاج</th><th>تاريخ الفقس</th><th>العد التنازلي</th><th>حذف</th></tr>`;
-    couples.forEach(c => {
-        const daysLeft = c.hatch_date ? calcDaysLeft(c.hatch_date) : '-';
-        const color = c.status === 'treatment' ? 'red' : (c.status === 'eggs' ? 'green' : '');
-        html += `
-            <tr style="background-color: ${color};">
-                <td>${c.couple_id}</td>
-                <td>${c.egg_count}</td>
-                <td>${c.treatment || '-'}</td>
-                <td>${c.hatch_date || '-'}</td>
-                <td>${daysLeft}</td>
-                <td><button onclick="deleteCouple(${c.id})">🗑</button></td>
-            </tr>
-        `;
+// تحميل بيانات الأزواج وتحديث الحالات
+app.get('/get-couples', (req, res) => {
+  const updateToChicks = `
+    UPDATE couples
+    SET status = 'chicks'
+    WHERE status = 'eggs' AND CURDATE() >= hatch_date
+  `;
+  const moveToChicks = `
+    INSERT INTO chicks (couple_id, hatch_date, days_since_hatch, days_until_slaughter)
+    SELECT couple_id, hatch_date,
+           DATEDIFF(CURDATE(), hatch_date),
+           18 - DATEDIFF(CURDATE(), hatch_date)
+    FROM couples
+    WHERE status = 'chicks'
+      AND couple_id NOT IN (SELECT couple_id FROM chicks)
+  `;
+  connection.query(updateToChicks, () => {
+    connection.query(moveToChicks, () => {
+      connection.query('SELECT * FROM couples', (err, results) => {
+        if (err) return res.status(500).send('Error fetching couples');
+        res.json(results);
+      });
     });
-    return html;
-}
+  });
+});
 
-// جدول الفراخ
-function renderChicks(chicks) {
-    let html = `<tr><th>رقم الزوج</th><th>تاريخ الفقس</th><th>مر على الفقس</th><th>العد التنازلي للذبح</th></tr>`;
-    chicks.forEach(c => {
-        html += `
-            <tr>
-                <td>${c.couple_id}</td>
-                <td>${c.hatch_date}</td>
-                <td>${c.days_since_hatch} يوم</td>
-                <td>${c.days_until_slaughter} يوم</td>
-            </tr>
-        `;
-    });
-    return html;
-}
+// جلب بيانات الفراخ
+app.get('/get-chicks', (req, res) => {
+  connection.query('SELECT * FROM chicks', (err, results) => {
+    if (err) return res.status(500).send('Error fetching chicks');
+    res.json(results);
+  });
+});
 
-// حساب الأيام المتبقية للفقس
-function calcDaysLeft(hatchDate) {
-    const now = new Date();
-    const target = new Date(hatchDate);
-    const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
-    return diff >= 0 ? `${diff} يوم` : 'فقس';
-}
-
-// تحميل البيانات عند بداية الصفحة
-window.onload = loadCouples;
+// تشغيل السيرفر
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
