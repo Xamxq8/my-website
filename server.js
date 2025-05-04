@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// الاتصال بقاعدة البيانات
+// الاتصال بقاعدة البيانات PlanetScale
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -58,7 +58,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// صفحة لوحة التحكم (محميّة)
+// صفحة لوحة التحكم
 app.get('/dashboard', (req, res) => {
   if (!req.session.loggedIn) {
     return res.redirect('/');
@@ -66,7 +66,7 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// إضافة زوج جديد
+// إضافة زوج
 app.post('/add-couple', (req, res) => {
   const { coupleId, eggCount, treatment, treatmentDays } = req.body;
 
@@ -94,6 +94,50 @@ app.post('/add-couple', (req, res) => {
     if (err) {
       console.error('DB Error during insert:', err);
       return res.status(500).json({ error: 'Error adding couple' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// تعديل زوج
+app.put('/update-couple/:id', (req, res) => {
+  const coupleId = req.params.id;
+  const { eggCount, treatment, treatmentDays } = req.body;
+
+  let status = 'no_eggs';
+  let hatchDate = null;
+
+  if (eggCount > 0) {
+    hatchDate = new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    status = 'eggs';
+  } else if (treatment) {
+    status = 'treatment';
+  }
+
+  const sql = `
+    UPDATE couples 
+    SET egg_count = ?, treatment = ?, treatment_days = ?, hatch_date = ?, status = ?
+    WHERE id = ?
+  `;
+
+  connection.query(sql, [eggCount, treatment, treatmentDays, hatchDate, status, coupleId], (err) => {
+    if (err) {
+      console.error('Update Error:', err);
+      return res.status(500).json({ error: 'Error updating couple' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// حذف زوج
+app.delete('/delete-couple/:id', (req, res) => {
+  const coupleId = req.params.id;
+  const sql = 'DELETE FROM couples WHERE id = ?';
+
+  connection.query(sql, [coupleId], (err) => {
+    if (err) {
+      console.error('Delete Error:', err);
+      return res.status(500).json({ error: 'Error deleting couple' });
     }
     res.json({ success: true });
   });
@@ -135,7 +179,7 @@ app.get('/get-chicks', (req, res) => {
   });
 });
 
-// تفعيل تحميل ملفات js و css
+// تفعيل ملفات ثابتة
 app.use(express.static(__dirname));
 
 // تشغيل السيرفر
