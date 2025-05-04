@@ -1,80 +1,84 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8" />
-    <title>تسجيل الدخول</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #007bff;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-box {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        input {
-            padding: 10px;
-            margin: 10px;
-            width: 80%;
-            border-radius: 5px;
-            border: none;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        #error-message {
-            margin-top: 10px;
-            color: #ff9999;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>تسجيل الدخول</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #007bff;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #error-message {
+      color: #ffcccc;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>تسجيل الدخول</h2>
-        <form id="login-form">
-            <input type="text" id="username" placeholder="اسم المستخدم" required />
-            <input type="password" id="password" placeholder="كلمة المرور" required />
-            <button type="submit">دخول</button>
-        </form>
-        <div id="error-message"></div>
-    </div>
+  <div class="login-box">
+    <h2>تسجيل الدخول</h2>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="اسم المستخدم" required />
+      <input type="password" id="password" placeholder="كلمة المرور" required />
+      <button type="submit">دخول</button>
+    </form>
+    <div id="error-message"></div>
+  </div>
 
-    <script>
-        document.getElementById("login-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            fetch("/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => {
-                if (response.status === 200) {
-                    window.location.href = '/dashboard';
-                } else {
-                    document.getElementById("error-message").innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
-                }
-            });
-        });
-    </script>
+  <script>
+    document.getElementById("login-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(response => {
+        if (response.status === 200) {
+          window.location.href = "/dashboard";
+        } else {
+          document.getElementById("error-message").innerText = "اسم المستخدم أو كلمة المرور غير صحيحة!";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
