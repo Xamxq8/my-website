@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// ES modules __dirname setup
+// __dirname compatibility for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, SESSION_SECRET } = process.env;
 
-// MySQL pool (PlanetScale)
+// PlanetScale (MySQL) pool
 const pool = mysql.createPool({
   host: DB_HOST,
   user: DB_USER,
@@ -26,7 +26,7 @@ const pool = mysql.createPool({
   ssl: { rejectUnauthorized: true }
 });
 
-// Session middleware
+// session middleware
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
@@ -37,7 +37,7 @@ app.use(session({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize tables & seed 4 users
+// initialize tables & seed users
 (async () => {
   const conn = await pool.getConnection();
   await conn.query(`
@@ -74,7 +74,7 @@ app.use(express.static(path.join(__dirname, 'public')));
   conn.release();
 })();
 
-// Routes
+// routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
@@ -122,7 +122,7 @@ app.delete('/delete-couple/:id', async (req, res) => {
 });
 
 app.get('/get-couples', async (req, res) => {
-  // Move hatched pairs to chicks
+  // move hatched pairs to chicks
   await pool.query(`
     INSERT INTO chicks (couple_id, hatch_date, days_since_hatch, days_until_slaughter)
     SELECT couple_id, CURDATE(),
@@ -146,4 +146,6 @@ app.get('/get-chicks', async (req, res) => {
   res.json(rows);
 });
 
-app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
+app.listen(PORT, () => {
+  console.log('Server running on port ' + PORT);
+});
