@@ -16,19 +16,19 @@
     <div id="error" style="color:red;"></div>
   </div>
   <script>
-    document.getElementById('login-form').addEventListener('submit', e=>{
+    document.getElementById('login-form').addEventListener('submit', e => {
       e.preventDefault();
       const data = {
         username: e.target.username.value,
         password: e.target.password.value
       };
-      fetch('/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(data)
-      }).then(res=>{
-        if(res.ok) location.href = '/dashboard';
-        else document.getElementById('error').innerText='بيانات غير صحيحة';
+      fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      }).then(res => {
+        if (res.ok) location.href = '/dashboard';
+        else document.getElementById('error').innerText = 'بيانات غير صحيحة';
       });
     });
   </script>
