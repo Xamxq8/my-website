@@ -2,13 +2,7 @@
   "name": "my-website",
   "version": "1.0.0",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "A web application for managing bird couples and chicks, including adding, deleting, and updating records.",
+  "scripts": { "start": "node server.js" },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^2.2.0",
@@ -17,7 +11,5 @@
     "express-session": "^1.18.1",
     "mysql2": "^3.9.7"
   },
-  "engines": {
-    "node": ">=18"
-  }
+  "engines": { "node": ">=18" }
 }
